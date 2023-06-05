@@ -11,9 +11,9 @@ namespace DATN.Application.User
         public int? UserId { get; set; }
         public string UserName { get; set; }
         public string PassWord { get; set; }
-        public string Status { get; set; }
-        public string Role { get; set; }
-        public int? CampusId { get; set; }
+        public int Status { get; set; }
+        public int Role { get; set; }
+        public int? BuildingId { get; set; }
         public string Name { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string Gender { get; set; }
