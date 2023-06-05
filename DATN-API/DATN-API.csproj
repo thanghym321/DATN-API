@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DATN.Application\DATN.Application.csproj" />
-    <ProjectReference Include="..\DATN.DataContextDF\DATN.DataContextDF.csproj" />
+    <ProjectReference Include="..\DATN.DataContextCF\DATN.DataContextCF.csproj" />
   </ItemGroup>
 
 </Project>

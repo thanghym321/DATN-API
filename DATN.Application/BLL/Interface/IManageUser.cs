@@ -12,7 +12,7 @@ namespace DATN.Application.BLL.Interface
     {
         UserViewModel Authenticate(string username, string password);
         Task<List<UserViewModel>> Get();
-        Task<PageResult<UserViewModel>> GetAllPaging(int pageindex, int pagesize, string UserName, string Name, string Role);
+        Task<PageResult<UserViewModel>> GetAllPaging(int pageindex, int pagesize, string UserName, string Name, int Role);
         Task<UserViewModel> GetById(int Id);
         Task<int> Create(UserModel request);
         Task<int> Update(UserModel request);

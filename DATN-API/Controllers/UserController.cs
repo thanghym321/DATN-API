@@ -24,47 +24,47 @@ namespace DATN_API.Controllers
         [HttpPost]
         public IActionResult authenticate([FromBody] AuthenticateModel model)
         {
-            var user = _manageUser.Authenticate(model.username, model.password);
+            var result = _manageUser.Authenticate(model.username, model.password);
 
-            if (user == null)
+            if (result == null)
                 return BadRequest(new { message = "Tài khoản hoặc mật khẩu sai!" });
 
-            return Ok(user);
+            return Ok(result);
         }
 
         [HttpGet]
         public async Task<IActionResult> get()
         {
-            var users = await _manageUser.Get();
-            if (users == null)
+            var result = await _manageUser.Get();
+            if (result == null)
             {
                 return BadRequest("Get Failed");
             }
 
-            return Ok(users);
+            return Ok(result);
         }
 
         [HttpGet]
-        public async Task<IActionResult> getallpaging([FromQuery] int pageindex, int pagesize, string UserName, string Name, string Role)
+        public async Task<IActionResult> getallpaging([FromQuery] int pageindex, int pagesize, string UserName, string Name, int Role)
         {
-            var users = await _manageUser.GetAllPaging(pageindex, pagesize, UserName, Name, Role);
-            if (users == null)
+            var result = await _manageUser.GetAllPaging(pageindex, pagesize, UserName, Name, Role);
+            if (result == null)
             {
                 return BadRequest("Get Failed");
             }
 
-            return Ok(users);
+            return Ok(result);
         }
 
         [HttpGet("{Id}")]
         public async Task<IActionResult> getbyid(int Id)
         {
-            var user = await _manageUser.GetById(Id);
-            if (user == null)
+            var result = await _manageUser.GetById(Id);
+            if (result == null)
             {
                 return BadRequest("Cannot find user");
             }
-            return Ok(user);
+            return Ok(result);
         }
 
         [HttpPost]

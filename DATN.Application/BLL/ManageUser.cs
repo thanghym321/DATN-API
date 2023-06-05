@@ -1,7 +1,7 @@
 ﻿using DATN.Application.BLL.Interface;
 using DATN.Application.Common;
 using DATN.Application.User;
-using DATN.DataContextDF.Models;
+using DATN.DataContextCF.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -22,10 +22,10 @@ namespace DATN.Application.BLL
 {
     public class ManageUser : IManageUser
     {
-        private readonly DATN_DFContext _context;
+        private readonly DATN_CFContext _context;
         private readonly AppSettings _appSettings;
 
-        public ManageUser(IOptions<AppSettings> appSettings, DATN_DFContext context)
+        public ManageUser(IOptions<AppSettings> appSettings, DATN_CFContext context)
         {
             _appSettings = appSettings.Value;
             _context = context;
@@ -42,7 +42,7 @@ namespace DATN.Application.BLL
                              PassWord = a.PassWord,
                              Status = a.Status,
                              Role = a.Role,
-                             CampusId = b.CampusId,
+                             BuildingId = b.BuildingId,
                              Name = b.Name,
                              DateOfBirth = b.DateOfBirth,
                              Gender = b.Gender,
@@ -92,7 +92,7 @@ namespace DATN.Application.BLL
                 PassWord = x.a.PassWord,
                 Status = x.a.Status,
                 Role = x.a.Role,
-                CampusId = x.b.CampusId,
+                BuildingId = x.b.BuildingId,
                 Name = x.b.Name,
                 DateOfBirth = x.b.DateOfBirth,
                 Gender = x.b.Gender,
@@ -106,7 +106,7 @@ namespace DATN.Application.BLL
         }
 
 
-        public async Task<PageResult<UserViewModel>> GetAllPaging(int pageindex, int pagesize, string UserName, string Name, string Role)
+        public async Task<PageResult<UserViewModel>> GetAllPaging(int pageindex, int pagesize, string UserName, string Name, int Role)
         {
             var query = from a in _context.Accounts
                         join b in _context.Users on a.UserId equals b.Id
@@ -120,13 +120,13 @@ namespace DATN.Application.BLL
             {
                 query = query.Where(x => x.b.Name.ToLower().Contains(Name.ToLower()));
             }
-            if (!string.IsNullOrEmpty(Role))
+            if (Role!=-1)
             {
-                query = query.Where(x => x.a.Role.ToLower().Contains(Role.ToLower()));
+                query = query.Where(x => x.a.Role==Role);
             }
 
             int totalRow = await query.CountAsync();
-            var data = await query.Skip((pageindex - 1) * pagesize).Take(pagesize)
+            var data = await query.OrderByDescending(x => x.a.Id).Skip((pageindex - 1) * pagesize).Take(pagesize)
             .Select(x => new UserViewModel()
             {
                 UserId = x.a.UserId,
@@ -134,7 +134,7 @@ namespace DATN.Application.BLL
                 PassWord = x.a.PassWord,
                 Status = x.a.Status,
                 Role = x.a.Role,
-                CampusId = x.b.CampusId,
+                BuildingId = x.b.BuildingId,
                 Name = x.b.Name,
                 DateOfBirth = x.b.DateOfBirth,
                 Gender = x.b.Gender,
@@ -166,7 +166,7 @@ namespace DATN.Application.BLL
                             PassWord = a.PassWord,
                             Status = a.Status,
                             Role = a.Role,
-                            CampusId = b.CampusId,
+                            BuildingId = b.BuildingId,
                             Name = b.Name,
                             DateOfBirth = b.DateOfBirth,
                             Gender = b.Gender,
@@ -187,8 +187,8 @@ namespace DATN.Application.BLL
             _context.Users.Add(request.user);
             await _context.SaveChangesAsync();
 
-            int User_Id = request.user.Id;
-            request.account.UserId = User_Id;
+            int UserId = request.user.Id;
+            request.account.UserId = UserId;
             _context.Accounts.Add(request.account);
             await _context.SaveChangesAsync();
 
@@ -199,7 +199,7 @@ namespace DATN.Application.BLL
         {
             var user = await _context.Users.FindAsync(request.user.Id);
         
-            user.CampusId = request.user.CampusId;
+            user.BuildingId = request.user.BuildingId;
             user.Name = request.user.Name;
             user.DateOfBirth = request.user.DateOfBirth;
             user.Gender = request.user.Gender;

@@ -15,6 +15,7 @@ namespace DATN.DataContextDF.Models
         public int Id { get; set; }
         public int? UserId { get; set; }
         public string Type { get; set; }
+        public DateTime DateCreated { get; set; }
         public DateTime? DatePayment { get; set; }
         public string Status { get; set; }
 

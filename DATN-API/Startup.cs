@@ -1,10 +1,12 @@
-using DATN.Application.BLL;
+﻿using DATN.Application.BLL;
 using DATN.Application.BLL.Interface;
 using DATN.Application.User;
-using DATN.DataContextDF.Models;
+using DATN.DataContextCF.EF;
+using DATN.DataContextCF.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,8 +35,17 @@ namespace DATN_API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //mail
+            services.AddOptions();                                         // Kích hoạt Options
+            var mailsettings = Configuration.GetSection("MailSettings");  // đọc config
+            services.Configure<MailSettings>(mailsettings);                // đăng ký để Inject
+
+
+
+
             //db
-            services.AddDbContext<DATN_DFContext>();
+            services.AddDbContext<DATN_CFContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("DATN_CF")));
 
             // configure strongly typed settings objects
             var appSettingsSection = Configuration.GetSection("AppSettings");
@@ -63,8 +74,27 @@ namespace DATN_API
 
             //services
             services.AddTransient<IManageUser, ManageUser>();
+            services.AddTransient<IManageCampus, ManageCampus>();
+            services.AddTransient<IManageBuilding, ManageBuilding>();
+            services.AddTransient<IManageRoom, ManageRoom>();
+            services.AddTransient<IManageElectricityWaterRate, ManageElectricityWaterRate>();
+            services.AddTransient<IManageFeedback, ManageFeedback>();
+            services.AddTransient<IManageMeterReading, ManageMeterReading>();
+            services.AddTransient<IManageReport, ManageReport>();
+            services.AddTransient<IManageService, ManageService>();
+            services.AddTransient<ISendMailService, SendMailService>();
+            services.AddTransient<IManageRoomRegistration, ManageRoomRegistration>();
+            services.AddTransient<IManageInvoice, ManageInvoice>();
 
 
+
+
+            // Lấy tham chiếu đến IServiceProvider để có thể giải quyết các phụ thuộc
+            var serviceProvider = services.BuildServiceProvider();
+
+            // Gọi phương thức Start() của ManageRoomRegistration
+            var invoice = serviceProvider.GetService<IManageInvoice>();
+            invoice.Start();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -76,6 +106,37 @@ namespace DATN_API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
+            ////mail 
+            //app.UseEndpoints(endpoints => {
+            //    endpoints.MapGet("/", async context => {
+            //        await context.Response.WriteAsync("Hello World!");
+            //    });
+
+            //    endpoints.MapGet("/testmail", async context => {
+
+            //        // Lấy dịch vụ sendmailservice
+            //        var sendmailservice = context.RequestServices.GetService<ISendMailService>();
+
+            //        MailContent content = new MailContent
+            //        {
+            //            To = "xuanthulab.net@gmail.com",
+            //            Subject = "Kiểm tra thử",
+            //            Body = "<p><strong>Xin chào xuanthulab.net</strong></p>"
+            //        };
+
+            //        await sendmailservice.SendMail(content);
+            //        await context.Response.WriteAsync("Send mail");
+            //    });
+
+            //});
+
+            //cors them dau tien
+            app.UseCors(builder => builder
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader());
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
