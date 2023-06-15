@@ -1,4 +1,5 @@
-﻿using DATN.Application.BLL.Interface;
+﻿using DATN.Application.BLL;
+using DATN.Application.BLL.Interface;
 using DATN.DataContextCF.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -28,10 +29,35 @@ namespace DATN_API.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> getallpaging([FromQuery] int pageindex, int pagesize, int? Status)
+        [HttpGet("{Id}")]
+        public async Task<IActionResult> GetRoomByUserId(int Id)
         {
-            var result = await _manageRoom.GetAllPaging(pageindex, pagesize, Status);
+            var result = await _manageRoom.GetRoomByUserId(Id);
+            if (result == null)
+            {
+                return BadRequest("Cannot find");
+            }
+            return Ok(result);
+
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllPagingUserInRoom([FromQuery] int pageindex, int pagesize, int Id)
+        {
+            var result = await _manageRoom.GetAllPagingUserInRoom(pageindex, pagesize, Id);
+            if (result == null)
+            {
+                return BadRequest("Get Failed");
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> getallpaging([FromQuery] RoomModel request)
+        {
+            var result = await _manageRoom.GetAllPaging(request);
             if (result == null)
             {
                 return BadRequest("Get Failed");

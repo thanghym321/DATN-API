@@ -10,12 +10,11 @@ namespace DATN.Application.BLL.Interface
     public interface IManageRoomRegistration
     {
         Task<List<RoomRegistrationViewModel>> Get();
-        Task<PageResult<RoomRegistrationViewModel>> GetAllPaging(int pageindex, int pagesize, int Status);
         Task<RoomRegistrationViewModel> GetById(int Id);
-        Task<List<RoomRegistrationViewModel>> GetByIdUser(int Id);
+        Task<PageResult<RoomRegistrationViewModel>> GetAllPaging(RoomRegistrationModel request);
         Task<int> Create(RoomRegistrationModel request);
         Task<int> Confirm(int Id);
-        //public void Start();
-        //Task<int> Delete(int Id);
+        Task<int> SendMailLeave(string Email, int Id);
+        Task<int> VerifyLeave(string Code, int Id);
     }
 }

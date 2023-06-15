@@ -11,7 +11,6 @@ namespace DATN.DataContextCF.Entities
         public int CampusId { get; set; }
         public string Name { get; set; }
         public int Floor { get; set; }
-        public int Room { get; set; }
 
         //Khóa tham chiếu đến bảng khác
         public Campus Campus { get; set; }

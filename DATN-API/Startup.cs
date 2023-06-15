@@ -85,10 +85,10 @@ namespace DATN_API
             services.AddTransient<ISendMailService, SendMailService>();
             services.AddTransient<IManageRoomRegistration, ManageRoomRegistration>();
             services.AddTransient<IManageInvoice, ManageInvoice>();
+            services.AddTransient<IStatistic, Statistic>();
+            services.AddTransient<IVnPayService, VnPayService>();
 
-
-
-
+            services.AddMemoryCache();
             // Lấy tham chiếu đến IServiceProvider để có thể giải quyết các phụ thuộc
             var serviceProvider = services.BuildServiceProvider();
 
@@ -143,6 +143,7 @@ namespace DATN_API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DATN_API v1"));
             }
+
 
             app.UseRouting();
 

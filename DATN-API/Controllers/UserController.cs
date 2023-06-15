@@ -19,7 +19,79 @@ namespace DATN_API.Controllers
             _manageUser = manageUser;
 
         }
+        [HttpGet]
+        public async Task<IActionResult> SendMailResetPassword(string Email)
+        {
+            var result = await _manageUser.SendMailResetPassword(Email);
+            if (result == 1)
+            {
+                return Ok(result);
+            }
+            if (result == 2)
+            {
+                return Ok(result);
+            }
 
+            return BadRequest("Send Failed");
+        }
+        [HttpGet]
+        public async Task<IActionResult> SendMailChangePassword(string Email,int Id)
+        {
+            var result = await _manageUser.SendMailChangePassword(Email,Id);
+            if (result == 1)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest("Send Failed");
+        }
+        [HttpGet]
+        public async Task<IActionResult> VerifyChangePassWord(string Code, string NewPassword, int Id)
+        {
+            var result = await _manageUser.VerifyChangePassWord(Code,NewPassword,Id);
+            if (result == 1)
+            {
+                return Ok(result);
+            }
+            if (result == 2)
+            {
+                return Ok(result);
+            }
+            return BadRequest("Verify Failed");
+        }
+        [HttpPost]
+        public async Task<IActionResult> Register(UserModel  request)
+        {
+            var result = await _manageUser.Register(request);
+            if (result == 1)
+            {
+                return Ok(result);
+            }
+            if (result == 2)
+            {
+                return Ok(result);
+            }
+            if (result == 3)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest("Send Failed");
+        }
+        [HttpGet]
+        public async Task<IActionResult> VerifyRegister(string Code, int Id)
+        {
+            var result = await _manageUser.VerifyRegister(Code, Id);
+            if (result == 1)
+            {
+                return Redirect("http://localhost:9999/login");
+            }
+            if (result == 2)
+            {
+                return Ok(result);
+            }
+            return BadRequest("Verify Failed");
+        }
         [AllowAnonymous]
         [HttpPost]
         public IActionResult authenticate([FromBody] AuthenticateModel model)

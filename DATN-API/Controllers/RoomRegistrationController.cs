@@ -16,51 +16,16 @@ namespace DATN_API.Controllers
         {
             _manageRoomRegistration = manageRoomRegistration;
         }
-        //[HttpGet]
-        //public async Task<IActionResult> get()
-        //{
-        //    var result = await _manageRoomRegistration.Get();
-        //    if (result == null)
-        //    {
-        //        return BadRequest("Get Failed");
-        //    }
-
-        //    return Ok(result);
-        //}
-
         [HttpGet]
-        public async Task<IActionResult> getallpaging([FromQuery] int pageindex, int pagesize, int Status)
+        public async Task<IActionResult> getallpaging([FromQuery] RoomRegistrationModel request)
         {
-            var result = await _manageRoomRegistration.GetAllPaging(pageindex, pagesize, Status);
+            var result = await _manageRoomRegistration.GetAllPaging(request);
             if (result == null)
             {
                 return BadRequest("Get Failed");
             }
 
             return Ok(result);
-        }
-
-        //[HttpGet("{Id}")]
-        //public async Task<IActionResult> getbyid(int Id)
-        //{
-        //    var result = await _manageRoomRegistration.GetById(Id);
-        //    if (result == null)
-        //    {
-        //        return BadRequest("Cannot find");
-        //    }
-        //    return Ok(result);
-
-        //}
-        [HttpGet("{Id}")]
-        public async Task<IActionResult> getbyiduser(int Id)
-        {
-            var result = await _manageRoomRegistration.GetByIdUser(Id);
-            if (result == null)
-            {
-                return BadRequest("Cannot find");
-            }
-            return Ok(result);
-
         }
         [HttpPost]
         public async Task<IActionResult> create([FromBody] RoomRegistrationModel request)
@@ -89,6 +54,40 @@ namespace DATN_API.Controllers
 
             return BadRequest("Confirm Failed");
 
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SendMailLeave(string Email, int Id)
+        {
+            var result = await _manageRoomRegistration.SendMailLeave(Email,Id);
+            if (result == 1)
+            {
+                return Ok(1);
+
+            }
+            return BadRequest("Send Failed");
+
+        }
+        [HttpGet]
+        public async Task<IActionResult> VerifyLeave(string Code, int Id)
+        {
+            string htmlContent = "<html><body><h1>Tra phong thanh cong!</h1></body></html>";
+            string htmlContent1 = "<html><body><h1>Ban van con hoa don chua thanh toan!</h1></body></html>";
+            string htmlContent2 = "<html><body><h1>Duong dan khong con hieu luc!</h1></body></html>";
+
+
+            var result = await _manageRoomRegistration.VerifyLeave(Code, Id);
+            if (result == 1)
+            {
+                return Content(htmlContent, "text/html");
+
+            }
+            if (result == 2)
+            {
+                return Content(htmlContent1, "text/html");
+
+            }
+            return Content(htmlContent2, "text/html");
         }
     }
 }

@@ -10,10 +10,10 @@ namespace DATN_API.Controllers
     [ApiController]
     public class SendController : ControllerBase
     {
-        private readonly ISendMailService _manageBuilding;
-        public SendController(ISendMailService manageBuilding)
+        private readonly ISendMailService _sendMailService;
+        public SendController(ISendMailService sendMailService)
         {
-            _manageBuilding = manageBuilding;
+            _sendMailService = sendMailService;
         }
 
         [HttpPost]
@@ -26,7 +26,7 @@ namespace DATN_API.Controllers
                 Body = mailContent.Body
             };
 
-            await _manageBuilding.SendMail(content);
+            await _sendMailService.SendMail(content);
             return Ok("Thành công");
         }
     }

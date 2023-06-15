@@ -20,7 +20,6 @@ namespace DATN.DataContextCF.Configurations
             builder.Property(x => x.CampusId).HasColumnType("int").IsRequired();
             builder.Property(x => x.Name).HasColumnType("nvarchar(50)").IsRequired();
             builder.Property(x => x.Floor).HasColumnType("int").IsRequired();
-            builder.Property(x => x.Room).HasColumnType("int").IsRequired();
 
 
             builder.HasOne<Campus>(x => x.Campus).WithMany(x => x.Buildings).HasForeignKey(x => x.CampusId);
