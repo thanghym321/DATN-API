@@ -9,7 +9,7 @@ namespace DATN.DataContextCF.Entities
     {
         public int Id { get; set; }
         public int InvoiceId { get; set; }
-        public string type { get; set; }
+        public string Type { get; set; }
         public decimal Quantity { get; set; }
         public decimal UnitPrice { get; set; }
 

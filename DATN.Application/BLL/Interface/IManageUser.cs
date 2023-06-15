@@ -10,6 +10,11 @@ namespace DATN.Application.BLL.Interface
 {
     public interface IManageUser
     {
+        Task<int> SendMailResetPassword(string Email);
+        Task<int> SendMailChangePassword(string Email, int Id);
+        Task<int> VerifyChangePassWord(string Code, string NewPassword, int Id);
+        Task<int> Register(UserModel request);
+        Task<int> VerifyRegister(string Code, int Id);
         UserViewModel Authenticate(string username, string password);
         Task<List<UserViewModel>> Get();
         Task<PageResult<UserViewModel>> GetAllPaging(int pageindex, int pagesize, string UserName, string Name, int Role);

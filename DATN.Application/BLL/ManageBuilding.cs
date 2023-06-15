@@ -33,7 +33,6 @@ namespace DATN.Application.BLL
                 CampusName = x.b.Name,
                 Name = x.a.Name,
                 Floor = x.a.Floor,
-                Room = x.a.Room,
 
             }).ToListAsync();
         }
@@ -57,7 +56,6 @@ namespace DATN.Application.BLL
                 CampusName = x.b.Name,
                 Name = x.a.Name,
                 Floor = x.a.Floor,
-                Room = x.a.Room,
 
             }).ToListAsync();
 
@@ -81,7 +79,6 @@ namespace DATN.Application.BLL
                             CampusName = b.Name,
                             Name = a.Name,
                             Floor = a.Floor,
-                            Room = a.Room,
                         };
 
             var obj = await query.SingleOrDefaultAsync(x => x.Id == Id);
@@ -95,7 +92,6 @@ namespace DATN.Application.BLL
                 CampusId = request.CampusId,
                 Name = request.Name,
                 Floor = request.Floor,
-                Room = request.Room,
             };
 
             _context.Buildings.Add(obj);
@@ -110,7 +106,6 @@ namespace DATN.Application.BLL
             obj.CampusId = request.CampusId;
             obj.Name = request.Name;
             obj.Floor = request.Floor;
-            obj.Room = request.Room;
 
             await _context.SaveChangesAsync();
 

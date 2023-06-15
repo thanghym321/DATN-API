@@ -2,7 +2,11 @@
 using DATN.Application.Common;
 using DATN.Application.User;
 using DATN.DataContextCF.EF;
+using DATN.DataContextCF.Entities;
+using DATN.DataContextCF.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -24,11 +28,75 @@ namespace DATN.Application.BLL
     {
         private readonly DATN_CFContext _context;
         private readonly AppSettings _appSettings;
+        private readonly ISendMailService _sendMailService;
+        private readonly IMemoryCache _cache;
 
-        public ManageUser(IOptions<AppSettings> appSettings, DATN_CFContext context)
+        public ManageUser(IOptions<AppSettings> appSettings, DATN_CFContext context, ISendMailService sendMailService, IMemoryCache cache)
         {
             _appSettings = appSettings.Value;
             _context = context;
+            _sendMailService = sendMailService;
+            _cache = cache;
+        }
+        public async Task<int> SendMailResetPassword(string Email)
+        {
+            var query = from a in _context.Accounts
+                         join b in _context.Users on a.UserId equals b.Id
+                         select new { a , b };
+
+            string confirmationCode = Guid.NewGuid().ToString("N").Substring(0, 5);
+            var user = await query.FirstOrDefaultAsync(x => x.b.Email == Email);
+            if (user == null) 
+            {
+                return 2;
+            }
+            var account = await _context.Accounts.FindAsync(user.a.Id);
+            account.PassWord= confirmationCode;
+            await _context.SaveChangesAsync();
+
+            var email = Email;
+            var subject = "Xác nhận đổi mật khẩu";
+            var htmlMessage = $"Mật khẩu của bạn là: {confirmationCode}";
+
+            await _sendMailService.SendEmailAsync(email, subject, htmlMessage);
+            return 1;
+        }
+        public async Task<int> SendMailChangePassword(string Email,int Id)
+        {
+            try
+            {
+                string confirmationCode = Guid.NewGuid().ToString("N").Substring(0, 5);
+
+                var email = Email;
+                var subject = "Xác nhận đổi mật khẩu";
+                var htmlMessage = $"Mã xác nhận của bạn là: {confirmationCode}";
+
+                await _sendMailService.SendEmailAsync(email, subject, htmlMessage);
+
+                _cache.Set(Id, confirmationCode, TimeSpan.FromMinutes(5));
+
+                return 1;
+            }
+            catch (Exception) { return 2; }
+        }
+
+        public async Task<int> VerifyChangePassWord(string Code, string NewPassword, int Id)
+        {
+            if (_cache.TryGetValue(Id, out string cachedVerificationCode))
+            {
+                // So sánh mã xác nhận nhập vào với mã xác nhận lưu trong cache
+                if (Code == cachedVerificationCode)
+                {
+                    var user = await _context.Accounts.FirstOrDefaultAsync(x => x.UserId == Id);
+                    user.PassWord = NewPassword;
+                    await _context.SaveChangesAsync();
+
+                    // Xóa mã xác nhận khỏi cache
+                    _cache.Remove(Id);
+                    return 1;
+                }
+            }
+            return 2;
         }
 
         public UserViewModel Authenticate(string username, string password)
@@ -182,6 +250,70 @@ namespace DATN.Application.BLL
             return user;
         }
 
+        public async Task<int> Register(UserModel request)
+        {
+            var query = from a in _context.Accounts
+                        join b in _context.Users on a.UserId equals b.Id
+                        select new { a, b };
+
+            var Active= await query.CountAsync(x => x.b.Email==request.user.Email && x.a.Status==(int)Status.Active);
+            var InActive = await query.CountAsync(x => x.b.Email == request.user.Email && x.a.Status == (int)Status.INActive);
+
+
+            if (Active > 0) { return 2; };
+            if (InActive > 0) 
+            {
+                string confirmationCode1 = Guid.NewGuid().ToString("N").Substring(0, 5);
+
+                var email1 = request.user.Email;
+                var subject1 = "Xác nhận đăng ký";
+                var htmlMessage1 = $"Nhấn vào đường link sau để xác nhận: http://localhost:5000/api/User/VerifyRegister?Id={request.user.Id}&Code={confirmationCode1}";
+
+                await _sendMailService.SendEmailAsync(email1, subject1, htmlMessage1);
+
+                _cache.Set(request.user.Id, confirmationCode1, TimeSpan.FromMinutes(30));
+                return 3;
+            }
+
+            _context.Users.Add(request.user);
+            await _context.SaveChangesAsync();
+
+            int UserId = request.user.Id;
+            request.account.UserId = UserId;
+            _context.Accounts.Add(request.account);
+            await _context.SaveChangesAsync();
+            string confirmationCode = Guid.NewGuid().ToString("N").Substring(0, 5);
+
+            var email = request.user.Email;
+            var subject = "Xác nhận đăng ký";
+            var htmlMessage = $"Nhấn vào đường link sau để xác nhận: http://localhost:5000/api/User/VerifyRegister?Id={request.user.Id}&Code={confirmationCode}";
+
+            await _sendMailService.SendEmailAsync(email, subject, htmlMessage);
+
+            _cache.Set(request.user.Id, confirmationCode, TimeSpan.FromMinutes(30));
+
+            return 1;
+        }
+
+        public async Task<int> VerifyRegister(string Code, int Id)
+        {
+            if (_cache.TryGetValue(Id, out string cachedVerificationCode))
+            {
+                // So sánh mã xác nhận nhập vào với mã xác nhận lưu trong cache
+                if (Code == cachedVerificationCode)
+                {
+                    var user = await _context.Accounts.FirstOrDefaultAsync(x => x.UserId == Id);
+                    user.Status = (int)Status.Active;
+                    await _context.SaveChangesAsync();
+
+                    // Xóa mã xác nhận khỏi cache
+                    _cache.Remove(Id);
+                    return 1;
+                }
+            }
+            return 2;
+        }
+
         public async Task<int> Create(UserModel request)
         {
             _context.Users.Add(request.user);
@@ -226,6 +358,12 @@ namespace DATN.Application.BLL
 
         public async Task<int> Delete(int Id)
         {
+            var invoice = await _context.Invoices.CountAsync(x => x.UserId == Id && x.Status==(int)StatusInvoice.unpaid);
+            if (invoice > 0)
+            {
+                return 2;
+            }
+
             var account = await _context.Accounts.SingleOrDefaultAsync(x => x.UserId == Id);
             _context.Accounts.Remove(account);
             await _context.SaveChangesAsync();

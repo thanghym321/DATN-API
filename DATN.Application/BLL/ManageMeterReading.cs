@@ -86,7 +86,7 @@ namespace DATN.Application.BLL
             bool isyes = _context.MeterReadings
                 .Any(x => x.RoomId == request.RoomId 
                 && x.Date.Month == DateTime.Now.Month 
-                && x.Date.Year == DateTime.Now.Month);
+                && x.Date.Year == DateTime.Now.Year);
             if (isyes)
             {
                 return 2;
